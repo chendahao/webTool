@@ -1,0 +1,30 @@
+﻿<li class="dropdown navbar-notification">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-bell-o"></i><span class="count label label-danger rounded"></span></a>
+    <!-- Start dropdown menu -->
+    <div class="dropdown-menu animated flipInX">
+        <div class="dropdown-header">
+            <span class="title">24小时报警</span>
+        </div>
+        <div class="dropdown-body niceScroll">
+            <!-- Start notification list -->
+            <div class="media-list small" id="warnlist">
+                <a href="#" class="media">
+                    <div class="media-object pull-left"></div>
+                    <div class="media-body">
+                        <span class="media-text">这里显示报警历史记录</span>
+                        <!-- Start meta icon -->
+                        <span class="media-meta"> </span>
+                        <!--/ End meta icon -->
+                    </div><!-- /.media-body -->
+                </a><!-- /.media -->
+                <!-- Start notification indicator -->
+                <!--/ End notification indicator -->
+            </div>
+            <!--/ End notification list -->
+        </div>
+        <div class="dropdown-footer">
+            <a href="@Url.Action("Index","Warning")">查询全部</a>
+        </div>
+    </div>
+    <!--/ End dropdown menu -->
+</li>

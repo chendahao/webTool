@@ -1,0 +1,408 @@
+﻿@{
+    ViewBag.Title = "用户管理";
+    WebTool.Models.AuthorizeKey AK = ViewData["cchp.keys"] as WebTool.Models.AuthorizeKey;
+}
+<div class="header-content">
+    <h2><i class="fa fa-cube"></i> 用户管理 <span>管理系统中用户并分配角色</span></h2>
+    <div class="breadcrumb-wrapper hidden-xs">
+        <ol class="breadcrumb">
+            <li>
+                <i class="fa fa-home"></i>
+                <a href="@Url.Action("Index","Home")">首页</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                系统管理
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li class="active">用户管理</li>
+        </ol>
+    </div>
+</div>
+
+<section class="content" style="padding: 5px;">
+    <div id="userlist"></div>
+    <script id="optiontemp" type="text/x-kendo-template">
+        <div class='text-center'>
+            @if (AK != null && AK.CanEdit)
+            {
+            }
+                <button onclick="javascript:changepwd('#:Id#');" class="k-button" title="修改密码">修改密码</button>
+            @if (AK != null && AK.CanInvalid)
+            {
+            }
+                <button onclick="javascript:invd('#:Id#');" class="k-button" title="激活/禁用">激活/禁用</button>
+            @if (AK != null && AK.CanEdit)
+            {
+            }
+                <button onclick="javascript:edit('#:Id#');" class="k-button" title="编辑数据"><i class="fa fa-edit"></i>编辑</button>
+            @if (AK != null && AK.CanDelete)
+            {
+            }
+                <button onclick="javascript:del('#:Id#');" class="k-button" title="删除数据"><i class="fa fa-remove"></i>删除</button>
+        </div>
+    </script>
+</section>
+@section Scripts {
+
+    <script type="text/javascript">
+        var dataSource;
+    </script>
+
+    @if (AK != null && AK.CanView)
+    { }
+        <script>
+            $(function () {
+                dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: '@Url.Action("Details","User")',
+                            dataType: "json"
+                        }
+                    },
+                    schema: {
+                        data: function (d) {
+                            return d.data;  //响应到页面的数据
+                        },
+                        total: function (d) {
+                            return d.total;   //总条数
+                        }
+                    },
+                    pageSize: 15,
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true
+                });
+                $("#userlist").kendoGrid({
+                    dataSource: dataSource,
+                    scollable: "100%",
+                    height: contentHeight,
+                    filterable: false,
+                    sortable: false,
+                    resizable: true,
+                    pageable: {
+                        refresh: true,
+                        pageSizes: false,
+                        buttonCount: 5,
+                        page: 1,
+                        pageSize: 15,
+                        messages: {
+                            display: "显示 {0}-{1} 共 {2} 项",
+                            empty: "没有数据",
+                            itemsPerPage: "每面显示数量",
+                            first: "第一页",
+                            last: "最后一页",
+                            next: "下一页",
+                            previous: "上一页"
+                        }
+                    },
+                    columns: [
+                        { field: "UserName", title: "登录名", width: "8%" },
+                        { field: "Cname", title: "中文名", width: "8%" },
+                        { field: "Email", title: "邮箱", width: "12%" },
+                        { field: "Mobile", title: "联系电话", width: "8%" },
+                        { field: "Stat", title: "状态", width: "4%", template: '#=(Stat==0)?"禁用":"激活"#' },
+                        { field: "RegDate", title: "注册时间", width: "10%", template: '#=(new Date(parseInt(RegDate.replace("/Date(", "").replace(")/", ""), 10)).format("yyyy-MM-dd  hh:mm"))#' },
+                        { field: "SecurityStamp", title: "拥有角色", width: "10%" },
+                        {
+                            title: "操作", width: "25%", headerAttributes: { id: 'tabOp' }, attributes: { "class": "text-center" },
+                            template: $("#optiontemp").html()
+                        }
+                    ]
+                });
+            });
+        </script>
+    
+    @if (AK != null && AK.CanInsert)
+    { }
+        <script>
+            function add() {
+                var viewModel = kendo.observable({ Id: "0" });
+                kendo.bind($('#fm'), viewModel);
+                $('input[name="Password"]').attr("readonly", false);
+                $('input[name="rPassword"]').attr("readonly", false);
+                $('#myModal').modal('show');
+            }
+            $(function () {
+                var op = '操作 <button onclick="javascript:add();" title="新增" class="k-button" style="margin-left:10px;"><i class="fa fa-plus-circle fa-1.5x"></i>新增</button>';
+                $('#tabOp').html(op);
+            });
+        </script>
+    
+    @if (AK != null && AK.CanEdit)
+    { }
+
+         <!-- 修改密码 -->
+        <div class="modal fade loadingModal bs-example-modal-sm" id="pwdModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog" style="width:600px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h5 class="modal-title" id="myModalLabel">
+                            修改密码
+                        </h5>
+                    </div>
+                    <div class="modal-body form-horizontal">
+                        <div class="form-group">
+                            <input name="Id" id="id" class="hidden" value="0">
+                            <label class="col-xs-2">用户名:</label>
+                            <div class="col-xs-10">
+                                <input name="UserName" id="name" class="form-control" placeholder="登录名" disabled="disabled" required="true">
+                            </div>
+                        </div>
+                        <div class="form-group" id="oldpwd">
+                            <label class="col-xs-2">旧密码:</label>
+                            <div class="col-xs-10">
+                                <input type="password" name="PasswordHash" id="oldpass" class="form-control" placeholder="密码" required="true">
+                            </div>
+                        </div>
+                        <div class="form-group" id="newpwd">
+                            <label class="col-xs-2">新密码:</label>
+                            <div class="col-xs-10">
+                                <input type="password" name="newPasswordHash" id="newpass" class="form-control" placeholder="密码" required="true">
+                            </div>
+                        </div>
+                        <div class="form-group" id="rpwd">
+                            <label class="col-xs-2">确认密码:</label>
+                            <div class="col-xs-10">
+                                <input type="password" name="rPasswordHash" id="checkpass" class="form-control" placeholder="确认密码" required="true">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                            关闭
+                        </button>
+                        <button type="button" onclick="savechange()" class="btn btn-primary">
+                            提交更改
+                        </button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+
+        <script>
+            function edit(id) {
+                var data = myFind(dataSource.data(), 'Id', id);
+                var viewModel = JSON.parse(JSON.stringify(data));
+                viewModel.pass = "********";
+                viewModel.rpass = "********";
+                $('input[name="Password"]').attr("readonly", true);
+                $('input[name="rPassword"]').attr("readonly", true);
+                var mv = viewModel.PasswordHash;
+                kendo.bind($('#fm'), viewModel);
+                $('input[name="Roles"]').data("kendoMultiSelect").value(mv.split(','));
+                $('#myModal').modal('show');
+            }
+
+
+
+            function changepwd(id) {
+                var data = myFind(dataSource.data(), 'Id', id);
+                $("#id").val(id);
+                $("#name").val(data.UserName);
+                $("#oldpass").val("");
+                $("#newpass").val("");
+                $("#checkpass").val("");
+                $('#pwdModal').modal('show');
+            }
+
+            function savechange() {
+                var uid = $("#id").val();
+                var oldPass = $("#oldpass").val();
+                var newPass = $("#newpass").val();
+                var checkPass = $("#checkpass").val();
+                var url = "@Url.Action("SavePass", "User")";
+                $.ajax({
+                    url: encodeURI(url),
+                    data: { uid: uid, oldpassword: oldPass, password: newPass, rpassword: checkPass },
+                    type: 'post',
+                    success: function (result) {
+                        if (result != "") {
+                            noty({ text: result, theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                        } else {
+                            noty({ text: "密码修改成功！", theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                            $('#pwdModal').modal('hide');
+                        }
+                    }
+                });
+            }
+
+        </script>
+    
+    @if (AK != null && AK.CanDelete)
+    { }
+        <script>
+            function del(id) {
+                myConfirm(null, function () {
+                    $.ajax({
+                        url: '@Url.Action("Delete","User")',
+                        type: "post",
+                        dataType: "json",
+                        data: { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                        success: function (result) {
+                            if (result == "") {
+                                dataSource.read();
+                            } else {
+                                noty({ text: result, theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            noty({ text: '状态：' + textStatus + ' 错误信息：' + errorThrown, theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                        }
+                    });
+                });
+            }
+        </script>
+    
+    @if (AK != null && (AK.CanInsert || AK.CanEdit))
+    { }
+    <!-- 模态框（Modal） -->
+        <div class="modal fade bs-example-modal-sm" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog" style="width:500px;">
+                <div class="modal-content">
+                    @using (Html.BeginForm("Edit", "User", FormMethod.Post, new { @id = "fm" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+                            <h5 class="modal-title" id="myModalLabel">
+                                用户信息
+                            </h5>
+                        </div>
+                        <div class="modal-body form-horizontal">
+                            <div class="form-group">
+                                <label class="col-md-3">登录名称:</label>
+                                <div class="col-md-9">
+                                    <input type="hidden" name="Id" data-bind="value: Id">
+                                    <input name="UserName" data-bind="value: UserName" class="form-control" placeholder="登录名称" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3">中文名:</label>
+                                <div class="col-md-9">
+                                    <input name="Cname" data-bind="value: Cname" class="form-control" placeholder="中文名" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3">密码:</label>
+                                <div class="col-md-9">
+                                    <input type="password" name="Password" data-bind="value: pass" class="form-control" placeholder="密码" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3">确认密码:</label>
+                                <div class="col-md-9">
+                                    <input type="password" name="rPassword" data-bind="value: rpass" class="form-control" placeholder="确认密码" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3">联系电话:</label>
+                                <div class="col-md-9">
+                                    <input name="Mobile" data-bind="value: Mobile" class="form-control" placeholder="联系电话">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3">邮箱:</label>
+                                <div class="col-md-9">
+                                    <input type="email" name="Email" data-bind="value: Email" class="form-control" placeholder="邮箱">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3">角色分配:</label>
+                                <div class="col-md-9">
+                                    <input name="Roles" id="Roles" data-bind="value: PasswordHash" class="form-control" placeholder="所属角色" style="width:100%;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" id="subs" class="btn btn-primary">
+                                提交更改
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            $(function () {
+                $('#fm').submit(function (e) {
+                    e.preventDefault();
+                    var cb = $("#fm").valid();
+                    if ($('input[name="Password"]').val() != $('input[name="rPassword"]').val()) {
+                        noty({ text: "密码与确认密码不一致", theme: 'relax', type: 'error', layout: 'center', timeout: 1000 });
+                        return;
+                    }
+                    if ($('input[name="Password"]').val().length < 6) {
+                        noty({ text: "密码至少6位", theme: 'relax', type: 'error', layout: 'center', timeout: 1000 });
+                        return;
+                    }
+                    var roles = $('input[name="Roles"]').data("kendoMultiSelect");
+                    if (roles.value().length < 1) {
+                        noty({ text: "角色必须选择", theme: 'relax', type: 'error', layout: 'center', timeout: 1000 });
+                        return;
+                    }
+                    $('input[name="Roles"]').val(roles.value().join(','));
+                    if (cb == true) {
+                        var form = $(this);
+                        ajaxSubmit(form, function (result) {
+                            if (result != "") {
+                                noty({ text: result, theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                            } else {
+                                dataSource.read();
+                                $('#myModal').modal('hide');
+                            }
+                        });
+                    }
+                });
+                $("#Roles").kendoMultiSelect({
+                    dataTextField: "Name",
+                    dataValueField: "Id",
+                    dataSource: {
+                        transport: {
+                            read: {
+                                url: '@Url.Action("GetRoles","User")',
+                                dataType: "json"
+                            }
+                        }
+                    }
+                });
+            });
+
+
+
+        </script>
+    
+    @if (AK != null && AK.CanInvalid)
+    { }
+        <script>
+            function invd(id) {
+                myConfirm("您确认要激活或禁用此账号么？", function () {
+                    $.ajax({
+                        url: '@Url.Action("Invalid", "User")',
+                        type: "post",
+                        dataType: "json",
+                        data: { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                        success: function (result) {
+                            if (result == "") {
+                                dataSource.read();
+                            } else {
+                                noty({ text: result, theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            noty({ text: '状态：' + textStatus + ' 错误信息：' + errorThrown, theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                        }
+                    });
+                });
+            }
+        </script>
+   
+}

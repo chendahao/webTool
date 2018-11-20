@@ -1,0 +1,190 @@
+﻿@*<link href="~/Content/list.css" rel="stylesheet" />*@
+@if (Request.IsAuthenticated)
+{
+    List<WebTool.Models.Module> modules = Session["module"] as List<WebTool.Models.Module>;
+    List<string> moduleIds = Session["mids"] as List<string>;
+    string[] icons = new string[] { "fa fa-road", "fa fa-road", "fa fa-book", "fa fa-spoon", "fa fa-cube", "fa fa-cubes", "fa fa-file-archive-o", "fa fa-keyboard-o", "fa fa-square", "fa fa-sitemap", "fa fa-tablet", "fa fa-tags", "fa fa-upload", "fa fa-share-alt-square" };
+
+    int inx = -1;
+    if (modules != null)
+    {
+        foreach (var mt in modules)
+        {
+            if (!moduleIds.Contains(mt.ModuleId))
+            {
+                continue;
+            }
+            var childs = mt.Children.Where(o => o.Type == 1).ToList();
+            if (childs.Count < 1)
+            {
+                continue;
+            }
+
+            inx++;
+            if (inx >= icons.Length)
+            {
+                inx = icons.Length - 1;
+            }
+            if (@mt.ControlName == "jk")
+            {
+                <li class="active treeview">
+                    <a href="#">
+                        <i class="@icons[inx]"></i> <span>@mt.Name</span>
+                        <span class="pull-right-container">
+                            <i class="fa fa-angle-left pull-right"></i>
+                        </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        @if (mt.Children != null && mt.Children.Count > 0)
+                        {
+                            var cld = mt.Children.Where(o => o.Type == 1 && o.Stat != 0).OrderBy(o => o.Sort).ToList();
+                            int sp = 0;
+                            if (cld.Count > 0)
+                            {
+                                sp = cld[0].Sort;
+                            }
+                            foreach (var mc in cld)
+                            {
+                                if (!moduleIds.Contains(mc.ModuleId))
+                                {
+                                    continue;
+                                }
+                                inx++;
+                                if (inx >= icons.Length)
+                                {
+                                    inx = icons.Length - 1;
+                                }
+                                if (mc.Sort - sp > 1)
+                                {
+                                    sp = mc.Sort;
+                                }
+                                if (mc.Children.Count > 0)
+                                {
+                                    @*var cld2 = mc.Children.Where(o => o.Type != 0 && o.Stat != 0).OrderBy(o => o.Sort).ToList();
+                                        int sp2 = 1;
+                                        <li>
+                                            <a tabindex="-1" href="#" style="cursor: default">
+                                                <i class="@icons[inx]"></i>
+                                                @mc.Name
+                                            </a>
+                                            <ul>
+                                                @foreach (var mcc in cld2)
+                                                {
+                                                    if (mcc.Sort - sp2 > 1)
+                                                    {
+                                                        sp2 = mcc.Sort;
+                                                    }
+                                                    <li class="header">@mcc.Name</li>
+                                                }
+                                            </ul>
+                                        </li>*@
+                                }
+                                //子模块
+                                else
+                                {
+                                    <li class="active" style="list-style:none">
+                                        <a href="@Url.Action("Index", mc.ControlName)">
+                                            <i class="@icons[inx]"></i>
+                                            @mc.Name
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        }
+                    </ul>
+                </li>
+            }
+            else {
+                <li class="treeview">
+                <a href="#">
+                    <i class="@icons[inx]"></i> <span>@mt.Name</span>
+                    <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+                </a>
+                <ul class="treeview-menu">
+                    @if (mt.Children != null && mt.Children.Count > 0)
+                    {
+                        var cld = mt.Children.Where(o => o.Type == 1 && o.Stat != 0).OrderBy(o => o.Sort).ToList();
+                        int sp = 0;
+                        if (cld.Count > 0)
+                        {
+                            sp = cld[0].Sort;
+                        }
+                        foreach (var mc in cld)
+                        {
+                            if (!moduleIds.Contains(mc.ModuleId))
+                            {
+                                continue;
+                            }
+                            inx++;
+                            if (inx >= icons.Length)
+                            {
+                                inx = icons.Length - 1;
+                            }
+                            if (mc.Sort - sp > 1)
+                            {
+                                sp = mc.Sort;
+                            }
+                            if (mc.Children.Count > 0)
+                            {
+                                @*var cld2 = mc.Children.Where(o => o.Type != 0 && o.Stat != 0).OrderBy(o => o.Sort).ToList();
+                                    int sp2 = 1;
+                                    <li>
+                                        <a tabindex="-1" href="#" style="cursor: default">
+                                            <i class="@icons[inx]"></i>
+                                            @mc.Name
+                                        </a>
+                                        <ul>
+                                            @foreach (var mcc in cld2)
+                                            {
+                                                if (mcc.Sort - sp2 > 1)
+                                                {
+                                                    sp2 = mcc.Sort;
+                                                }
+                                                <li class="header">@mcc.Name</li>
+                                            }
+                                        </ul>
+                                    </li>*@
+                            }
+                            //子模块
+                            else
+                            {
+                                <li style="list-style:none">
+                                    <a href="@Url.Action("Index", mc.ControlName)">
+                                        <i class="@icons[inx]"></i>
+                                        @mc.Name
+                                    </a>
+                                </li>
+                            }
+                        }
+                    }
+                </ul>
+            </li>
+            }
+
+        }
+    }
+       @*<div id="modfPass" class="easyui-dialog" title="修改密码" style="width:350px;height:190px;padding:0px; overflow:hidden;" closed="true">
+        <div class="ftitle">修改密码</div>
+        <div class="fitem row">
+            <label class="col-xs-4" style="margin-left:5px;">原密码：</label>
+            <input id="oldPwd" type="password" class="easyui-validatebox col-xs-8" style="width:60%;" required="true" />
+        </div>
+
+        <div class="fitem row">
+            <label class="col-xs-4" style="margin-left:5px;">新密码：</label>
+            <input id="newPwd" type="password" class="easyui-validatebox col-xs-8 " style="width:60%;" required="true" />
+        </div>
+
+        <div class="fitem row">
+            <label class="col-xs-4" style="margin-left:5px;">确认密码：</label>
+            <input id="checkPwd" type="password" class="easyui-validatebox col-xs-8" style="width:60%;" required="true" validtype="equals['#newPwd']" />
+        </div>
+        <br>
+        <div id="modfPass-buttons" class="dialog-button" style="width: 320px; ">
+            <a href="#" id="ok" class="easyui-linkbutton" iconcls="icon-ok" style="margin-right:20px;" onclick="savepwd()">保存</a>
+        </div>
+    </div>*@
+}
+

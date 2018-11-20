@@ -1,0 +1,411 @@
+﻿@{
+
+    ViewBag.Title = "角色管理";
+    WebTool.Models.AuthorizeKey AK = ViewData["cchp.keys"] as WebTool.Models.AuthorizeKey;
+}
+
+<div class="header-content">
+    <h2><i class="fa fa-cube"></i> 角色管理 <span>管理系统中角色并进行授权</span></h2>
+    <div class="breadcrumb-wrapper hidden-xs">
+        <ol class="breadcrumb">
+            <li>
+                <i class="fa fa-home"></i>
+                <a href="@Url.Action("Index","Home")">首页</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                系统管理
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li class="active">角色管理</li>
+        </ol>
+    </div>
+</div>
+<section class="content" style="padding: 5px;">
+    <div id="modulelist"></div>
+    <script id="optiontemp" type="text/x-kendo-template">
+        <div class='text-center'>
+            @if (AK != null && AK.CanAudit)
+            {
+            }
+                <button onclick="javascript:audit('#:Id#');" class="k-button" title="角色授权"><i class="fa fa-cog"></i>角色授权</button>
+            @if (AK != null && AK.CanEdit)
+            {
+            }
+                <button onclick="javascript:edit('#:Id#');" class="k-button" title="编辑数据"><i class="fa fa-edit"></i>编辑</button>
+            @if (AK != null && AK.CanDelete)
+            {
+            }
+                <button onclick="javascript:del('#:Id#');" class="k-button" title="删除数据"><i class="fa fa-remove"></i>删除</button>
+        </div>
+    </script>
+</section>
+
+@section Scripts
+{
+    <script type="text/javascript">
+        var dataSource;
+        var treeds;
+        var auds;
+        var audata = [];
+    </script>
+
+    @if (AK != null && AK.CanView)
+    { }
+        <script>
+        $(function () {
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: '@Url.Action("Details","Role")',
+                        dataType: "json"
+                    }
+                },
+                schema: {
+                    data: function (d) {
+                        return d.data;  //响应到页面的数据
+                    },
+                    total: function (d) {
+                        return d.total;   //总条数
+                    }
+                },
+                pageSize: 15,
+                serverPaging: true,
+                serverFiltering: true,
+                serverSorting: true
+            });
+            $("#modulelist").kendoGrid({
+                dataSource: dataSource,
+                scollable: "100%",
+                height: contentHeight,
+                filterable: false,
+                sortable: false,
+                pageable: {
+                    refresh: true,
+                    pageSizes: false,
+                    buttonCount: 5,
+                    page: 1,
+                    pageSize: 15,
+                    messages: {
+                        display: "显示 {0}-{1} 共 {2} 项",
+                        empty: "没有数据",
+                        itemsPerPage: "每面显示数量",
+                        first: "第一页",
+                        last: "最后一页",
+                        next: "下一页",
+                        previous: "上一页"
+                    }
+                },
+                columns: [
+                    { field: "Name", title: "角色名称", width: "75%" },
+                    {
+                        title: "操作", width: "25%", headerAttributes: { id: 'tabOp' }, attributes: { "class": "text-center" },
+                        template: $("#optiontemp").html()
+                    }
+                ]
+            });
+        });
+        </script>
+    
+    @if (AK != null && AK.CanInsert)
+    { }
+        <script>
+            function add() {
+                var viewModel = kendo.observable({ Id: "0" });
+                kendo.bind($('#fm'), viewModel);
+                $('#myModal').modal('show');
+            }
+            $(function () {
+                var op = '操作 <button onclick="javascript:add();" title="新增" class="k-button" style="margin-left:10px;"><i class="fa fa-plus-circle fa-1.5x"></i>新增</button>';
+                $('#tabOp').html(op);
+            });
+        </script>
+    
+    @if (AK != null && AK.CanEdit)
+    { }
+        <script>
+            function edit(id) {
+                var data = myFind(dataSource.data(), 'Id', id);
+                var viewModel = JSON.parse(JSON.stringify(data));
+                kendo.bind($('#fm'), viewModel);
+                $('#myModal').modal('show');
+            }
+        </script>
+    
+    @if (AK != null && AK.CanDelete)
+    { }
+        <script>
+        function del(id) {
+            myConfirm(null, function () {
+                $.ajax({
+                    url: '@Url.Action("Delete","Role")',
+                    type: "post",
+                    dataType: "json",
+                    data: { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                    success: function (result) {
+                        if (result == "") {
+                            dataSource.read();
+                        } else {
+                            noty({ text: result, theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        noty({ text: '状态：' + textStatus + ' 错误信息：' + errorThrown, theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                    }
+                });
+            });
+        }
+        </script>
+    
+    @if (AK != null && (AK.CanInsert || AK.CanEdit))
+    { }
+    <!-- 模态框（Modal） -->
+        <div class="modal fade bs-example-modal-sm" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog" style="width:500px;">
+                <div class="modal-content">
+                    @using (Html.BeginForm("Edit", "Role", FormMethod.Post, new { @id = "fm" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+                            <h5 class="modal-title" id="myModalLabel">
+                                角色信息
+                            </h5>
+                        </div>
+                        <div class="modal-body form-horizontal">
+                            <div class="form-group">
+                                <label class="col-md-3">角色名称:</label>
+                                <div class="col-md-9">
+                                    <input type="hidden" name="Id" data-bind="value: Id">
+                                    <input name="Name" data-bind="value: Name" class="form-control" placeholder="角色名称" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" id="subs" class="btn btn-primary">
+                                提交更改
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="modal fade in bs-example-modal-sm" id="ptModal" tabindex="-1" role="dialog" aria-labelledby="ptModalLabel" aria-hidden="true">
+            <div class="modal-dialog" style="width:800px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h5 class="modal-title" id="ptModalLabel">
+                            角色授权
+                        </h5>
+                    </div>
+                    <div class="modal-body">
+                        <div id="audlist"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $(function () {
+                $('#fm').submit(function (e) {
+                    e.preventDefault();
+                    var cb = $("#fm").valid();
+                    if (cb == true) {
+                        var form = $(this);
+                        ajaxSubmit(form, function (result) {
+                            if (result != "") {
+                                noty({ text: result, theme: 'relax', type: 'error', layout: 'center', timeout: 1000 });
+                            } else {
+                                dataSource.read();
+                                $('#myModal').modal('hide');
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+    
+    @if (AK != null && AK.CanAudit)
+    { }
+        <div class="modal fade in bs-example-modal-sm" id="auModal" tabindex="-1" role="dialog" aria-labelledby="auModalLabel" aria-hidden="true">
+            <div class="modal-dialog" style="width:700px;">
+                @using (Html.BeginForm("Audit", "Role", FormMethod.Post, new { @id = "aufm" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+                            <h5 class="modal-title" id="auModalLabel">
+                                角色授权
+                            </h5>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="ModuleId" data-bind="value: ModuleId">
+                            <input type="hidden" name="rid" data-bind="value: rid">
+                            <input type="hidden" name="ControlName" data-bind="value: ControlName">
+                            <table style="width:100%;">
+                                <tr>
+                                    <td width="16%">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="Index" data-bind="checked: Index">
+                                                模块使用
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td width="14%">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="Details" data-bind="checked: Details">
+                                                查看
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td width="14%">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="Create" data-bind="checked: Create">
+                                                新增
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td width="14%">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="Edit" data-bind="checked: Edit">
+                                                编辑
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td width="14%">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="Delete" data-bind="checked: Delete">
+                                                删除
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td width="14%">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="Audit" data-bind="checked: Audit">
+                                                授权
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td width="14%">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="Invalid" data-bind="checked: Invalid">
+                                                激活
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" id="auSub" class="btn btn-primary">
+                                提交修改
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <script>
+        function audit(id) {
+            var url = '@Url.Action("GetModule","Role")' + '?id=' + id;
+            $.getJSON(url, function (result) {
+                audata = result;
+                auds.read({ data: audata });// = audata;
+                $('#ptModal').modal('show');
+                $('#ptModal').on('shown.bs.modal', function (e) {
+                    $('.k-auto-scrollable').last().css('height', '368px');
+                });
+            });
+        }
+        function audone(id) {
+            var data = myFind(auds.data(), 'ModuleId', id);
+            var viewModel = JSON.parse(JSON.stringify(data));
+            kendo.bind($('#aufm'), viewModel);
+            $('#auModal').modal('show');
+        }
+        $(function () {
+            $('#aufm').submit(function (e) {
+                e.preventDefault();
+                var cb = $("#fm").valid();
+                if (cb == true) {
+                    var form = $(this);
+                    ajaxSubmit(form, function (result) {
+                        if (result != "") {
+                            noty({ text: result, theme: 'relax', type: 'error', layout: 'center', timeout: 1000 });
+                        } else {
+                            var url = '@Url.Action("GetModule","Role")' + '?id=' + $('input[name="rid"]').val();
+                            $.getJSON(url, function (result) {
+                                audata = result;
+                                auds.read({ data: audata });
+                            });
+                            $('#auModal').modal('hide');
+                        }
+                    });
+                }
+            });
+            auds = new kendo.data.TreeListDataSource({
+                transport: {
+                    read: function (operation) {
+                        var data = operation.data.data || [];
+                        operation.success(data);
+                    }
+                },
+                schema: {
+                    model: {
+                        id: "ModuleId",
+                        parentId: "ParentId",
+                        fields: {
+                            ModuleId: { type: "string", nullable: false },
+                            ParentId: { type: "string", nullable: true }
+                        },
+                        expanded: true
+                    }
+                }
+            });
+
+            $("#audlist").kendoTreeList({
+                dataSource: auds,
+                scollable: "100%",
+                height: "400",
+                filterable: false,
+                sortable: false,
+                columns: [
+                    {
+                        field: "Name", title: "模块名称", width: "32%",
+                        template: '<span><i class="fa fa-#: Icon #"></i> #: Name #</span>'
+                    },
+                    { field: "Index", title: "模块使用", width: "12%", attributes: { "class": "text-center" }, template: "#=(Index==false)?'无':'有'#" },
+                    { field: "Details", title: "查看", width: "8%", attributes: { "class": "text-center" }, template: "#=(Details==false)?'无':'有'#" },
+                    { field: "Create", title: "新增", width: "8%", attributes: { "class": "text-center" }, template: "#=(Create==false)?'无':'有'#" },
+                    { field: "Edit", title: "编辑", width: "8%", attributes: { "class": "text-center" }, template: "#=(Edit==false)?'无':'有'#" },
+                    { field: "Delete", title: "删除", width: "8%", attributes: { "class": "text-center" }, template: "#=(Delete==false)?'无':'有'#" },
+                    { field: "Audit", title: "授权", width: "8%", attributes: { "class": "text-center" }, template: "#=(Audit==false)?'无':'有'#" },
+                    { field: "Invalid", title: "激活", width: "8%", attributes: { "class": "text-center" }, template: "#=(Invalid==false)?'无':'有'#" },
+                    {
+                        title: "操作", width: "8%", attributes: { "class": "text-center" },
+                        template: '<a href="javascript:audone(\'#:ModuleId#\');" class="btn btn-default btn-xs" title="修改授权"><i class="fa fa-recycle"></i></a>'
+                    }
+                ]
+            });
+        });
+        </script>
+    
+}

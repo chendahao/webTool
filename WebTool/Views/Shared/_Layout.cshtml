@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+@{
+    Random rd = new Random();
+    ViewBag.uimg = "user" + rd.Next(1, 9).ToString() + ".jpg";
+    if (Session["user"] != null)
+    {
+        ViewBag.uname = (Session["user"] as WebTool.Models.AppUser).Cname;
+    }
+}
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    <!--[if lt IE 9]>
+    @Scripts.Render("~/bundles/ie9")
+    <![endif]-->
+</head>
+<body class="page-session page-header-fixed page-sidebar-fixed page-footer-fixed">
+    <section id="wrapper">
+        <header id="header">
+            <!-- Start header left -->
+            <div class="header-left">
+                <!-- Start offcanvas left: This menu will take position at the top of template header (mobile only). Make sure that only #header have the `position: relative`, or it may cause unwanted behavior -->
+                <div class="navbar-minimize-mobile left">
+                    <i class="fa fa-bars"></i>
+                </div>
+                <!--/ End offcanvas left -->
+                <!-- Start navbar header -->
+                <div class="navbar-header">
+                    <!-- Start brand -->
+                    <a class="navbar-brand" href="@Url.Action("Index","Home")">
+                        <i class="fa fa-toggle-on"></i>  状态管理
+                    </a><!-- /.navbar-brand -->
+                    <!--/ End brand -->
+                </div><!-- /.navbar-header -->
+                <!--/ End navbar header -->
+                <!-- Start offcanvas right: This menu will take position at the top of template header (mobile only). Make sure that only #header have the `position: relative`, or it may cause unwanted behavior -->
+                <div class="navbar-minimize-mobile right">
+                    <i class="fa fa-cog"></i>
+                </div>
+                <!--/ End offcanvas right -->
+                <div class="clearfix"></div>
+            </div><!-- /.header-left -->
+            <!--/ End header left -->
+            <!-- Start header right -->
+            <div class="header-right">
+                <!-- Start navbar toolbar -->
+                <div class="navbar navbar-toolbar navbar-primary">
+                    <!-- Start left navigation -->
+                    <ul class="nav navbar-nav navbar-left">
+                        <!-- Start sidebar shrink -->
+                        <li class="navbar-minimize">
+                            <a href="javascript:void(0);" title="Minimize sidebar">
+                                <i class="fa fa-bars"></i>
+                            </a>
+                        </li>
+                        <!--/ End sidebar shrink -->
+                        <!-- Start form search -->
+                        <li class="navbar-search">
+                            <!-- Just view on mobile screen-->
+                            <a href="#" class="trigger-search"><i class="fa fa-search"></i></a>
+                            <form class="navbar-form">
+                                <div class="form-group has-feedback">
+                                    <input type="text" class="form-control rounded" placeholder="Search for people, places and things">
+                                    <button type="submit" class="btn btn-theme fa fa-search form-control-feedback rounded"></button>
+                                </div>
+                            </form>
+                        </li>
+                        <!--/ End form search -->
+                    </ul><!-- /.nav navbar-nav navbar-left -->
+                    <!--/ End left navigation -->
+                    <!-- Start right navigation -->
+                    <ul class="nav navbar-nav navbar-right ">
+                        @*@Html.Partial("_topdr2")*@
+                        @Html.Partial("_topuser")
+                    </ul>
+                    <!--/ End right navigation -->
+                </div><!-- /.navbar-toolbar -->
+                <!--/ End navbar toolbar -->
+            </div><!-- /.header-right -->
+            <!--/ End header left -->
+        </header>
+
+        <aside id="sidebar-left" class="sidebar-circle">
+            @Html.Partial("_LoginInfo")
+            @Html.Partial("_menu")
+
+            <!-- Start left navigation - footer -->
+            <div class="sidebar-footer hidden-xs hidden-sm hidden-md">
+                <a id="setting1" class="pull-left" href="javascript:void(0);" data-toggle="tooltip" data-placement="top" data-title="Setting"><i class="fa fa-cog"></i></a>
+                <a id="fullscreen" class="pull-left" href="javascript:void(0);" data-toggle="tooltip" data-placement="top" data-title="Fullscreen"><i class="fa fa-desktop"></i></a>
+                <a id="lock-screen1" data-url="account.html#sign/page-lock-screen" class="pull-left" href="javascript:void(0);" data-toggle="tooltip" data-placement="top" data-title="Lock Screen"><i class="fa fa-lock"></i></a>
+                <a id="logout" data-url="account.html#sign/page-signin" class="pull-left" href="javascript:document.getElementById('logoutForm').submit();" data-toggle="tooltip" data-placement="top" data-title="Logout"><i class="fa fa-power-off"></i></a>
+            </div><!-- /.sidebar-footer -->
+            <!--/ End left navigation - footer -->
+        </aside>
+
+        <section id="page-content">
+            <div class="tab-content" style="padding: 0px !important; height: 100%;">
+                <div class="tab-pane fade active in" id="tabMap" style="height:100%;">
+                    @RenderBody()
+                </div>
+            </div>
+        </section>
+    </section><!-- /#wrapper -->
+
+    <div id="back-top" class="animated pulse circle">
+        <i class="fa fa-angle-up"></i>
+    </div>
+    @Html.Partial("_userAction")
+
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/jqueryval")
+    @RenderSection("scripts", required: false)
+    <script>
+    var contentHeight = $(window).outerHeight() - $('#header').outerHeight() - 63;
+    $(function () {
+        //根据控制器名称找到对应位置，控制上级菜单打开并设置突出背景色
+        var cn = '@ViewContext.RouteData.Values["controller"].ToString()';
+        if (cn.length > 0) {
+            var mli = $('.submenu >ul >li >a[href*="' + cn + '"]');
+            if (mli.length > 0) {
+                $(mli[0].parentNode.parentNode.parentNode).addClass('active');
+                $(mli[0].parentNode).addClass('active');
+            }
+        }
+    });
+
+    @*//路口列表  详情请看 topdr1.cshtml页面
+    var treeList;
+    $(function () {
+
+        treeList = $("#LoadList").kendoTreeView({
+            dataSource: {
+                //serverFiltering: true,
+                transport: {
+                    read: {
+                        url: "@Url.Action("GetTree", "Home")",
+                            type: "post",
+                            dataType: "json"
+                        }
+                    },
+                    schema: {
+                        model: {
+                            children: "child"
+                        }
+                    }
+                },
+                select:onSelect,
+                dataTextField: "text",
+                dataValueField: "id",
+            });
+            //停止 dropdown-menu 面板影藏
+            $(".dropdown-menu").on("click", "[data-stopPropagation]", function (e) {
+                e.stopPropagation();
+            });
+            $("#SearchBtn").kendoButton({
+                icon:"search"
+            });
+        });
+        //treeList 选中事件
+        function onSelect(e) {
+            var selectedNode = this.dataItem(e.node);
+            var inputArr = '';
+            inputArr+= '<input type="hidden" name="id" value="' + selectedNode.id + '"/>';
+            inputArr+= '<input type="hidden" name="name" value="' + selectedNode.text + '"/>'
+            inputArr+= '<input type="hidden" name="type" value="' + selectedNode.attributes.type + '"/>'
+             var f=document.createElement('form');
+            f.style.display='none';
+            f.action='@Url.Action("Index","TabsInfo")';
+            f.method='post';
+            f.innerHTML = inputArr;
+            document.body.appendChild(f);
+            f.submit();
+        }
+        $("#SearchBtn").click(function (e) {
+            var filterText = $("#filterValue").val();
+            $("#LoadList").data("kendoTreeView").expand(".k-item");
+            if (filterText !== "") {
+                $("#LoadList").data("kendoTreeView").dataSource.filter({
+                    field: "text",
+                    operator: "contains",
+                    value: filterText
+                }, {
+                    field: "id",
+                    operator: "contains",
+                    value: filterText
+                });
+                //$("#LoadList .k-group .k-group .k-in").closest("li").hide();
+                //$("#LoadList .k-group .k-item").hide();
+                //$("#LoadList .k-in:contains(" + filterText + ")").each(function () {
+                //    $(this).parents("ul, li").each(function () {
+                //        var treeView = $("#LoadList").data("kendoTreeView");
+                //        treeView.expand($(this).parents("li"));
+                //        $(this).show();
+                //    });
+                //});
+                //$("#LoadList .k-group .k-in:contains(" + filterText + ")").each(function () {
+                //    $(this).parents("ul, li").each(function () {
+                //        $(this).show();
+                //    });
+                //});
+            }
+            else {
+                $("#LoadList").data("kendoTreeView").dataSource.filter({});
+                //$("#LoadList .k-group").find("li").show();
+                //var nodes = $("#LoadList > .k-group > li");
+
+                //$.each(nodes, function (i, val) {
+                //    if (nodes[i].getAttribute("data-expanded") == null) {
+                //        $(nodes[i]).find("li").hide();
+                //    }
+                //});
+            }
+        });*@
+    </script>
+</body>
+</html>

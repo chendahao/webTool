@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+<head>
+    <title>登陆</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="~/static/login/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/static/login/css/camera.css" />
+    <link rel="stylesheet" href="~/static/login/bootstrap-responsive.min.css" />
+    <link rel="stylesheet" href="~/static/login/matrix-login.css" />
+    <link rel="stylesheet" href="~/static/login/font-awesome.css" />
+    <script type="text/javascript" src="~/static/login/js/jquery-1.5.1.min.js"></script>
+
+    <style type="text/css">
+        .cavs {
+            z-index: 1;
+            position: fixed;
+            width: 95%;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+    </style>
+    <script>
+        //window.setTimeout(showfh,3000);
+        var timer;
+
+        function showfh() {
+            fhi = 1;
+            //关闭提示晃动屏幕，注释掉这句话即可
+            //timer = setInterval(xzfh2, 10);
+        };
+        var current = 0;
+
+        function xzfh() {
+            current = (current) % 360;
+            document.body.style.transform = 'rotate(' + current + 'deg)';
+            current++;
+            if (current > 360) {
+                current = 0;
+            }
+        };
+        var fhi = 1;
+        var current2 = 1;
+
+        function xzfh2() {
+            if (fhi > 50) {
+                document.body.style.transform = 'rotate(0deg)';
+                clearInterval(timer);
+                return;
+            }
+            current = (current2) % 360;
+            document.body.style.transform = 'rotate(' + current + 'deg)';
+            current++;
+            if (current2 == 1) {
+                current2 = -1;
+            } else {
+                current2 = 1;
+            }
+            fhi++;
+        };
+    </script>
+</head>
+    <body>
+        @RenderBody()
+        @RenderSection("scripts", required: false)
+    </body>
+</html>

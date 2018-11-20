@@ -1,0 +1,61 @@
+﻿<ul class="sidebar-menu">
+    @*<li>
+        <a href="@Url.Action("Index","Home")">
+            <span class="icon"><i class="fa fa-home"></i></span>
+            <span class="text">监控中心</span>
+        </a>
+    </li>*@
+    @if (Request.IsAuthenticated)
+    {
+        List<WebTool.Models.Module> modules = Session["module"] as List<WebTool.Models.Module>;
+        List<string> moduleIds = Session["mids"] as List<string>;
+
+        if (modules != null)
+        {
+            foreach (var mt in modules)
+            {
+                var childs = mt.Children.Where(o => o.Type == 1).ToList();
+                if (childs.Count < 1)
+                {
+                    continue;
+                }
+                string url = "javascript:void(0);";
+                if (mt.Children == null || mt.Children.Count == 0)
+                {
+                    url = Url.Action("Index", mt.ControlName);
+                }
+
+                <li class="submenu">
+                    <a href="@url">
+                        <span class="icon"><i class="fa fa-@mt.Icon"></i></span>
+                        <span class="text">@mt.Name</span>
+                        <span class="arrow"></span>
+                    </a>
+
+                    @if (mt.Children != null && mt.Children.Count > 0)
+                    {
+                        <ul>
+                            @{
+                        var cld = mt.Children.Where(o => o.Type == 1 && o.Stat != 0).OrderBy(o => o.Sort).ToList();
+                        foreach (var mc in cld)
+                        {
+                            if (!moduleIds.Contains(mc.ModuleId))
+                            {
+                                url = "javascript:void(0);";
+                            }
+                            else
+                            {
+                                url = Url.Action("Index", mc.ControlName);
+                            }
+
+                            <li><a href="@url"><i class="fa fa-@mc.Icon menuli"></i> @mc.Name</a></li>
+
+                        }
+                            }
+                        </ul>
+                    }
+                </li>
+            }
+        }
+    }
+</ul>

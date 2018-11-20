@@ -1,0 +1,32 @@
+﻿.form-group {
+    margin-bottom: 3px !important;
+}
+
+div.k-treeview
+{
+   overflow: visible;
+}
+
+.k-grid td {
+    border-bottom: #99cc00 1px solid;
+}
+/*设置treeView 字体颜色*/
+.k-widget.k-treeview {
+    color: #000000;
+}
+
+.DivLocker {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    outline: 0;
+    display:none;
+    -webkit-overflow-scrolling: touch;
+    background-color: rgb(0, 0, 0);  
+    filter: alpha(opacity=80);  
+    background-color: rgba(0, 0, 0, 0.6); 
+    z-index: 99999;
+}

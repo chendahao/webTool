@@ -1,0 +1,102 @@
+﻿@using Microsoft.AspNet.Identity
+@model WebTool.Models.ManageUserViewModel
+<div class="modal fade loadingModal bs-example-modal-sm" id="myModalPwd" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:600px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h5 class="modal-title">
+                    修改密码
+                </h5>
+            </div>
+
+            <div class="modal-body form-horizontal">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.OldPassword, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        @Html.PasswordFor(m => m.OldPassword, new { @class = "form-control", id = "oldPwd" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.NewPassword, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        @Html.PasswordFor(m => m.NewPassword, new { @class = "form-control", id = "newPwd" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", id = "checkPwd" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    关闭
+                </button>
+                <button type="button" onclick="savepwd()" class="btn btn-primary">
+                    提交更改
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<script>
+    function CheckPwd() {
+        $("#oldPwd").val(null);
+        $("#newPwd").val(null);
+        $("#checkPwd").val(null);
+        $('#myModalPwd').modal('show');
+    }
+
+    function savepwd() {
+        var uid = "@Session["id"]";
+        var oldPass = $("#oldPwd").val();
+        var newPass = $("#newPwd").val();
+        var checkPass = $("#checkPwd").val();
+        $.ajax({
+            url: '@Url.Action("SavePass", "User")',
+            data: { uid: uid, oldpassword: oldPass, password: newPass, rpassword: checkPass },
+            type: 'post',
+            success: function (result) {
+                if (result != "") {
+                    noty({ text: result, theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                } else {
+                    noty({ text: "您的密码修改成功！", theme: 'relax', type: 'error', layout: 'center', timeout: 3000 });
+                    $('#myModalPwd').modal('hide');
+                }
+            }
+        });
+
+    }
+
+    //$(function () {
+    //    $('#fm_pwd').submit(function (envent) {
+    //        debugger
+    //        envent.preventDefault();
+    //        //var uid = envent.target.elements.Id.value;
+    //        //var oldpassword = envent.target.elements.oldPwd.value;
+    //        //var password = envent.target.elements.newPwd.value;
+    //        //var rpassword = envent.target.elements.rPwd.value;
+    //        var cb = $("#fm_pwd").valid();
+    //        if (cb == true) {
+    //            var form = $(this);
+    //            //var url = "http://localhost/ccCovers/User/SavePass";
+    //            //form.context.action = url + "?uid=" + uid + "&oldpassword=" + oldpassword + "&password=" + password + "$rpassword=" + rpassword;
+    //            ajaxSubmit(form, function (result) {
+    //                if (result.errorMsg) {
+    //                    $('#myModalPwd').noty({ text: errorMsg, theme: 'relax', type: 'error', layout: 'center', timeout: 1000 });
+    //                } else {
+    //                    alert("您的密码已修改！");
+    //                    $('#myModalPwd').modal('hide');
+    //                }
+    //            });
+    //        }
+    //    });
+    //});
+
+</script>
